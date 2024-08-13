@@ -3,7 +3,7 @@ import transcriptionReducer from "./slices/transcriptionSlice";
 
 export const store = configureStore({
     reducer:{
-        treanscription: transcriptionReducer
+        transcription: transcriptionReducer
     },
 })
 

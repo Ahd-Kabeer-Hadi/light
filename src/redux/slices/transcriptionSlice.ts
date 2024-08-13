@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import axios from 'axios'
 
+// Define the Transcription interface
 export interface Transcription {
   id: string
   videoUrl: string
@@ -8,18 +9,21 @@ export interface Transcription {
   createdAt: string
 }
 
+// Define the state interface
 interface TranscriptionState {
   transcriptions: Transcription[]
   status: 'idle' | 'loading' | 'succeeded' | 'failed'
   error: string | null
 }
 
+// Initial state
 const initialState: TranscriptionState = {
   transcriptions: [],
   status: 'idle',
   error: null,
 }
 
+// Async thunk for fetching transcriptions
 export const fetchTranscriptions = createAsyncThunk(
   'transcription/fetchTranscriptions',
   async () => {
@@ -28,14 +32,19 @@ export const fetchTranscriptions = createAsyncThunk(
   }
 )
 
+// Async thunk for creating a new transcription
 export const createTranscription = createAsyncThunk(
   'transcription/createTranscription',
   async (videoUrl: string) => {
+    console.log(videoUrl)
     const response = await axios.post('/api/transcribe', { videoUrl })
+    console.log(response.data);
+    
     return response.data
   }
 )
 
+// Create the slice
 const transcriptionSlice = createSlice({
   name: 'transcription',
   initialState,
@@ -51,60 +60,18 @@ const transcriptionSlice = createSlice({
       })
       .addCase(fetchTranscriptions.rejected, (state, action) => {
         state.status = 'failed'
-        state.error = action.error.message || null
+        state.error = action.error.message || 'Failed to fetch transcriptions'
       })
       .addCase(createTranscription.fulfilled, (state, action: PayloadAction<Transcription>) => {
         state.transcriptions.unshift(action.payload)
+        state.status = 'succeeded'
+      })
+      .addCase(createTranscription.rejected, (state, action) => {
+        state.status = 'failed'
+        state.error = action.error.message || 'Failed to create transcription'
       })
   },
 })
 
+// Export the reducer to use in the store
 export default transcriptionSlice.reducer
-
-
-
-// import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-// interface Transcription {
-//   id: string;
-//   videoUrl: string;
-//   transcript: string;
-//   summary: string;
-//   createdAt: string;
-// }
-
-// interface TanscriptionState {
-//   transcriptions: Transcription[];
-//   loading: boolean;
-//   error: string | null;
-// }
-
-// const initialState: TanscriptionState = {
-//   transcriptions: [],
-//   loading: false,
-//   error: null,
-// };
-
-// export const transcriptionSlice = createSlice({
-//   name: "transcription",
-//   initialState,
-//   reducers: {
-//     setTranscriptions: (state, action: PayloadAction<Transcription[]>) => {
-//       state.transcriptions = action.payload;
-//     },
-//     addTranscriptions: (state, action: PayloadAction<Transcription>) => {
-//       state.transcriptions.unshift(action.payload);
-//     },
-//     setLoading: (state, action: PayloadAction<boolean>) => {
-//       state.loading = action.payload;
-//     },
-//     setError: (state, action: PayloadAction<string | null>) => {
-//       state.error = action.payload;
-//     },
-//   },
-// });
-
-// export const { setTranscriptions, addTranscriptions, setLoading, setError } =
-//   transcriptionSlice.actions;
-
-// export default transcriptionSlice.reducer;
